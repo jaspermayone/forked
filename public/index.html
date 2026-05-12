@@ -1,36 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Forked</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+    rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:           #0c0b08;
-      --bg-card:      #141310;
-      --bg-term:      #090806;
-      --fg:           #ede8df;
-      --fg-muted:     #7a7165;
-      --fg-faint:     #2e2c28;
-      --amber:        #c8903e;
-      --amber-bright: #d9a656;
-      --amber-dim:    #6b4d22;
-      --cream:        #f6eedf;
-      --cream-mid:    #e8ddc8;
-      --ink:          #1a1712;
-      --ink-mid:      #2e2b25;
-      --ink-light:    #5a5248;
-      --border:       rgba(255,255,255,0.065);
-      --r:            12px;
-      --r-sm:         7px;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    html { font-size: 16px; }
+    :root {
+      --bg: #0c0b08;
+      --bg-card: #141310;
+      --bg-term: #090806;
+      --fg: #ede8df;
+      --fg-muted: #7a7165;
+      --fg-faint: #2e2c28;
+      --amber: #c8903e;
+      --amber-bright: #d9a656;
+      --amber-dim: #6b4d22;
+      --cream: #f6eedf;
+      --cream-mid: #e8ddc8;
+      --ink: #1a1712;
+      --ink-mid: #2e2b25;
+      --ink-light: #5a5248;
+      --border: rgba(255, 255, 255, 0.065);
+      --r: 12px;
+      --r-sm: 7px;
+    }
+
+    html {
+      font-size: 16px;
+    }
 
     body {
       background: var(--bg);
@@ -52,7 +63,7 @@
       translate: -50% 0;
       width: 55vw;
       height: 55vh;
-      background: radial-gradient(ellipse, rgba(200,144,62,.07) 0%, transparent 68%);
+      background: radial-gradient(ellipse, rgba(200, 144, 62, .07) 0%, transparent 68%);
       pointer-events: none;
       z-index: 0;
     }
@@ -82,7 +93,7 @@
       margin-bottom: 3rem;
       opacity: 0;
       transform: translateY(14px);
-      animation: rise .65s cubic-bezier(.22,1,.36,1) .08s forwards;
+      animation: rise .65s cubic-bezier(.22, 1, .36, 1) .08s forwards;
     }
 
     .wordmark {
@@ -124,20 +135,30 @@
       font-weight: 300;
     }
 
+    .header-desc {
+      margin-top: 1.1rem;
+      font-size: .84rem;
+      color: var(--fg-muted);
+      line-height: 1.65;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     /* ── Card ── */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-top: 1px solid rgba(200,144,62,.18);
+      border-top: 1px solid rgba(200, 144, 62, .18);
       border-radius: var(--r);
       box-shadow:
-        0 0 0 1px rgba(0,0,0,.3),
-        0 20px 50px rgba(0,0,0,.55),
-        0 6px 16px rgba(0,0,0,.4);
+        0 0 0 1px rgba(0, 0, 0, .3),
+        0 20px 50px rgba(0, 0, 0, .55),
+        0 6px 16px rgba(0, 0, 0, .4);
       overflow: hidden;
       opacity: 0;
       transform: translateY(18px);
-      animation: rise .7s cubic-bezier(.22,1,.36,1) .22s forwards;
+      animation: rise .7s cubic-bezier(.22, 1, .36, 1) .22s forwards;
     }
 
     /* ── Input area ── */
@@ -178,10 +199,21 @@
       min-width: 0;
     }
 
-    .url-input::placeholder { color: var(--fg-faint); }
-    .url-input:focus { border-color: var(--amber-dim); }
-    .url-input.valid   { border-color: #3a7d52; }
-    .url-input.invalid { border-color: #8b3333; }
+    .url-input::placeholder {
+      color: var(--fg-faint);
+    }
+
+    .url-input:focus {
+      border-color: var(--amber-dim);
+    }
+
+    .url-input.valid {
+      border-color: #3a7d52;
+    }
+
+    .url-input.invalid {
+      border-color: #8b3333;
+    }
 
     .url-hint {
       font-family: 'JetBrains Mono', monospace;
@@ -192,9 +224,17 @@
       transition: opacity .15s;
     }
 
-    .url-hint.visible { opacity: 1; }
-    .url-hint.h-valid   { color: #5a9e74; }
-    .url-hint.h-invalid { color: #c26060; }
+    .url-hint.visible {
+      opacity: 1;
+    }
+
+    .url-hint.h-valid {
+      color: #5a9e74;
+    }
+
+    .url-hint.h-invalid {
+      color: #c26060;
+    }
 
     .extract-btn {
       padding: .55rem 1.35rem;
@@ -216,14 +256,25 @@
     .extract-btn:hover {
       background: var(--amber-bright);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(200,144,62,.3);
+      box-shadow: 0 4px 16px rgba(200, 144, 62, .3);
     }
 
-    .extract-btn:active { transform: translateY(0); box-shadow: none; }
-    .extract-btn:disabled { opacity: .38; cursor: not-allowed; transform: none; box-shadow: none; }
+    .extract-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .extract-btn:disabled {
+      opacity: .38;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
 
     /* ── Terminal ── */
-    #log-panel { display: none; }
+    #log-panel {
+      display: none;
+    }
 
     .log-chrome {
       background: #0f0e0b;
@@ -234,11 +285,28 @@
       gap: .7rem;
     }
 
-    .tls { display: flex; gap: 5px; }
-    .tl { width: 10px; height: 10px; border-radius: 50%; }
-    .tl-r { background: #ff5f57; }
-    .tl-y { background: #febc2e; }
-    .tl-g { background: #28c840; }
+    .tls {
+      display: flex;
+      gap: 5px;
+    }
+
+    .tl {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .tl-r {
+      background: #ff5f57;
+    }
+
+    .tl-y {
+      background: #febc2e;
+    }
+
+    .tl-g {
+      background: #28c840;
+    }
 
     .log-chrome-label {
       font-family: 'JetBrains Mono', monospace;
@@ -268,13 +336,31 @@
       animation: slide-in .18s ease forwards;
     }
 
-    .log-line + .log-line { margin-top: .08rem; }
+    .log-line+.log-line {
+      margin-top: .08rem;
+    }
 
-    .log-ts  { color: var(--amber-dim); flex-shrink: 0; user-select: none; }
-    .log-msg { color: #b8b0a2; }
-    .log-line.l-done .log-msg { color: #6dba87; }
-    .log-line.l-err  .log-msg { color: #d97070; }
-    .log-line.l-cmd  .log-msg { color: var(--fg); }
+    .log-ts {
+      color: var(--amber-dim);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .log-msg {
+      color: #b8b0a2;
+    }
+
+    .log-line.l-done .log-msg {
+      color: #6dba87;
+    }
+
+    .log-line.l-err .log-msg {
+      color: #d97070;
+    }
+
+    .log-line.l-cmd .log-msg {
+      color: var(--fg);
+    }
 
     .log-cursor {
       display: inline-block;
@@ -287,7 +373,10 @@
     }
 
     /* ── Recipe card (light) ── */
-    #result { display: none; border-top: 1px solid var(--border); }
+    #result {
+      display: none;
+      border-top: 1px solid var(--border);
+    }
 
     .recipe-card {
       background: var(--cream);
@@ -322,9 +411,20 @@
       margin-top: .2rem;
     }
 
-    .ch-high { background: #d1fae5; color: #065f46; }
-    .ch-mid  { background: #fef3c7; color: #92400e; }
-    .ch-low  { background: #fee2e2; color: #991b1b; }
+    .ch-high {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .ch-mid {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .ch-low {
+      background: #fee2e2;
+      color: #991b1b;
+    }
 
     .recipe-meta {
       font-size: .8rem;
@@ -335,7 +435,7 @@
 
     .recipe-divider {
       height: 1px;
-      background: rgba(0,0,0,.09);
+      background: rgba(0, 0, 0, .09);
       margin: 1rem 0;
     }
 
@@ -363,7 +463,7 @@
       font-size: .87rem;
       line-height: 1.5;
       color: var(--ink-mid);
-      border-bottom: 1px solid rgba(0,0,0,.05);
+      border-bottom: 1px solid rgba(0, 0, 0, .05);
     }
 
     .recipe-list li::before {
@@ -387,7 +487,7 @@
     /* ── Actions bar ── */
     .actions {
       background: var(--cream-mid);
-      border-top: 1px solid rgba(0,0,0,.1);
+      border-top: 1px solid rgba(0, 0, 0, .1);
       padding: .85rem 2rem;
       display: flex;
       gap: .5rem;
@@ -409,11 +509,13 @@
 
     .act-ghost {
       background: transparent;
-      border: 1px solid rgba(0,0,0,.18);
+      border: 1px solid rgba(0, 0, 0, .18);
       color: var(--ink-mid);
     }
 
-    .act-ghost:hover { background: rgba(0,0,0,.06); }
+    .act-ghost:hover {
+      background: rgba(0, 0, 0, .06);
+    }
 
     .act-solid {
       background: var(--ink);
@@ -421,7 +523,9 @@
       color: var(--cream);
     }
 
-    .act-solid:hover { background: var(--ink-mid); }
+    .act-solid:hover {
+      background: var(--ink-mid);
+    }
 
     /* ── Footer ── */
     footer {
@@ -439,27 +543,54 @@
 
     /* ── Keyframes ── */
     @keyframes rise {
-      to { opacity: 1; transform: translateY(0); }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes slide-in {
-      from { opacity: 0; transform: translateX(-6px); }
-      to   { opacity: 1; transform: translateX(0); }
+      from {
+        opacity: 0;
+        transform: translateX(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
     }
 
     @keyframes reveal {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    #result.show { animation: reveal .35s cubic-bezier(.22,1,.36,1) forwards; }
+    #result.show {
+      animation: reveal .35s cubic-bezier(.22, 1, .36, 1) forwards;
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
 
@@ -467,9 +598,11 @@
       <div class="wordmark">Forked</div>
       <div class="tagline-row">
         <div class="tagline-rule"></div>
-        <span class="tagline">Recipe extractor</span>
+        <span class="tagline">Instagram Reel → recipe card</span>
         <div class="tagline-rule"></div>
       </div>
+      <p class="header-desc">Paste any Instagram Reel URL. Forked reads the caption, runs it through our recipe
+        detection logic, and hands you a clean recipe — ingredients, steps, and notes — ready to save or share.</p>
     </header>
 
     <div class="card">
@@ -478,9 +611,8 @@
       <div class="input-section">
         <label class="field-label" for="url-input">Instagram Reel URL</label>
         <div class="input-row">
-          <input id="url-input" class="url-input" type="url"
-                 placeholder="https://www.instagram.com/reel/…"
-                 autocomplete="off" spellcheck="false">
+          <input id="url-input" class="url-input" type="url" placeholder="https://www.instagram.com/reel/…"
+            autocomplete="off" spellcheck="false">
           <button id="extract-btn" class="extract-btn">Extract</button>
         </div>
         <div id="url-hint" class="url-hint"></div>
@@ -506,7 +638,8 @@
         <div class="actions">
           <button class="act act-ghost" id="copy-btn">Copy HTML</button>
           <a class="act act-ghost" id="download-link" href="#" download>Download .html</a>
-<a class="act act-solid" id="pear-link" href="https://pear.dunkirk.sh" target="_blank" rel="noreferrer">Open in Pear ↗</a>
+          <a class="act act-solid" id="pear-link" href="https://pear.dunkirk.sh" target="_blank" rel="noreferrer">Open
+            in Pear ↗</a>
         </div>
       </div>
 
@@ -516,16 +649,16 @@
   <footer>forked.jaspermayone.com</footer>
 
   <script>
-    const urlInput   = document.getElementById('url-input');
+    const urlInput = document.getElementById('url-input');
     const extractBtn = document.getElementById('extract-btn');
-    const urlHint    = document.getElementById('url-hint');
-    const logPanel   = document.getElementById('log-panel');
-    const logBodyEl  = document.getElementById('log-body');
-    const resultEl   = document.getElementById('result');
+    const urlHint = document.getElementById('url-hint');
+    const logPanel = document.getElementById('log-panel');
+    const logBodyEl = document.getElementById('log-body');
+    const resultEl = document.getElementById('result');
     const recipeCard = document.getElementById('recipe-card');
-    const copyBtn    = document.getElementById('copy-btn');
-    const dlLink     = document.getElementById('download-link');
-    const pearLink   = document.getElementById('pear-link');
+    const copyBtn = document.getElementById('copy-btn');
+    const dlLink = document.getElementById('download-link');
+    const pearLink = document.getElementById('pear-link');
 
     let currentHtml = '';
     let pollTimer = null;
@@ -542,7 +675,7 @@
       let parsed;
       try { parsed = new URL(raw); } catch { return { ok: false, msg: 'not a valid URL' }; }
       if (!parsed.hostname.includes('instagram.com')) return { ok: false, msg: 'must be an instagram.com URL' };
-      if (!/\/reels?\//.test(parsed.pathname))        return { ok: false, msg: 'must be a Reel URL  (instagram.com/reel/…)' };
+      if (!/\/reels?\//.test(parsed.pathname)) return { ok: false, msg: 'must be a Reel URL  (instagram.com/reel/…)' };
       return { ok: true, msg: 'looks good' };
     }
 
@@ -564,9 +697,9 @@
     }
 
     // Validate on every keystroke; only show "looks good" after blur
-    urlInput.addEventListener('input',  () => applyValidation(urlInput.value.trim(), false));
-    urlInput.addEventListener('blur',   () => applyValidation(urlInput.value.trim(), true));
-    urlInput.addEventListener('focus',  () => { urlHint.classList.remove('visible'); });
+    urlInput.addEventListener('input', () => applyValidation(urlInput.value.trim(), false));
+    urlInput.addEventListener('blur', () => applyValidation(urlInput.value.trim(), true));
+    urlInput.addEventListener('focus', () => { urlHint.classList.remove('visible'); });
 
     // Start disabled — nothing typed yet
     extractBtn.disabled = true;
@@ -578,7 +711,7 @@
     }
 
     function esc(s) {
-      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     /* ── Log rendering ── */
@@ -612,14 +745,14 @@
     /* ── Recipe rendering ── */
 
     function renderRecipe(recipe, jobId, source) {
-      const conf     = recipe.confidence ?? 0;
-      const chipCls  = conf >= .8 ? 'ch-high' : conf >= .6 ? 'ch-mid' : 'ch-low';
-      const chipTxt  = `${Math.round(conf * 100)}% · ${source}`;
-      const title    = esc(recipe.title ?? 'Untitled Recipe');
+      const conf = recipe.confidence ?? 0;
+      const chipCls = conf >= .8 ? 'ch-high' : conf >= .6 ? 'ch-mid' : 'ch-low';
+      const chipTxt = `${Math.round(conf * 100)}% · ${source}`;
+      const title = esc(recipe.title ?? 'Untitled Recipe');
 
       const meta = [
         recipe.servings && `Serves ${esc(recipe.servings)}`,
-        recipe.time     && esc(recipe.time),
+        recipe.time && esc(recipe.time),
       ].filter(Boolean).join(' · ');
 
       const ingItems = (recipe.ingredients ?? [])
@@ -680,13 +813,13 @@
 
           for (let i = seenCount; i < logs.length; i++) {
             const last = i === logs.length - 1;
-            const type = (job.status === 'done'  && last) ? 'done'
-                       : (job.status === 'error' && last) ? 'err' : '';
+            const type = (job.status === 'done' && last) ? 'done'
+              : (job.status === 'error' && last) ? 'err' : '';
             appendLog(logs[i], type);
           }
           seenCount = logs.length;
 
-              if (job.status === 'done') {
+          if (job.status === 'done') {
             clearInterval(pollTimer);
             if (job.dbId) {
               window.location.href = `/recipes/${job.dbId}`;
@@ -756,4 +889,5 @@
     });
   </script>
 </body>
+
 </html>
