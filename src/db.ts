@@ -61,6 +61,10 @@ export function getRecipe(id: number): RecipeRow | null {
   return (db.query("SELECT * FROM recipes WHERE id = ?").get(id) as RecipeRow) ?? null;
 }
 
+export function getRecipeByUrl(url: string): Pick<RecipeRow, "id"> | null {
+  return (db.query("SELECT id FROM recipes WHERE url = ? ORDER BY created_at DESC LIMIT 1").get(url) as Pick<RecipeRow, "id">) ?? null;
+}
+
 export function deleteRecipe(id: number): boolean {
   const res = db.query("DELETE FROM recipes WHERE id = ?").run(id);
   return res.changes > 0;

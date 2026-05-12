@@ -5,7 +5,7 @@
 **Forked** is a web app (with a CLI core) that takes an Instagram Reel URL and outputs clean
 semantic HTML suitable for reader-mode tools like pare.dunkirk.sh.
 
-Lives at `forked.hogwarts.dev`, hosted on Dippet (Mac mini).
+Lives at `forked.jaspermayone.com`, hosted on Dippet (Mac mini).
 
 Runs on a Mac mini. No AI by default; Claude vision is a fallback for low-confidence
 output only.
@@ -348,7 +348,7 @@ npm start                  # starts Express on port 3000
 
 Expose via Caddy on Alastor. Add to Caddyfile:
 ```
-forked.hogwarts.dev {
+forked.jaspermayone.com {
     reverse_proxy localhost:3000
 }
 ```

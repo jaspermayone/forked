@@ -506,19 +506,14 @@
         <div class="actions">
           <button class="act act-ghost" id="copy-btn">Copy HTML</button>
           <a class="act act-ghost" id="download-link" href="#" download>Download .html</a>
-          <a class="act act-ghost" id="library-link" href="/recipes.html" style="display:none">Library ↗</a>
-          <a class="act act-solid" id="pear-link" href="https://pear.dunkirk.sh" target="_blank" rel="noreferrer">Open in Pear ↗</a>
+<a class="act act-solid" id="pear-link" href="https://pear.dunkirk.sh" target="_blank" rel="noreferrer">Open in Pear ↗</a>
         </div>
       </div>
 
     </div>
   </div>
 
-  <footer>
-    <a href="/recipes.html" style="color:var(--amber-dim);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;font-size:.68rem;transition:color .15s" onmouseover="this.style.color='var(--amber)'" onmouseout="this.style.color='var(--amber-dim)'">Saved Recipes</a>
-    <span style="margin:0 .6rem;color:var(--fg-faint)">·</span>
-    forked.hogwarts.dev
-  </footer>
+  <footer>forked.jaspermayone.com</footer>
 
   <script>
     const urlInput   = document.getElementById('url-input');
@@ -530,13 +525,15 @@
     const recipeCard = document.getElementById('recipe-card');
     const copyBtn    = document.getElementById('copy-btn');
     const dlLink     = document.getElementById('download-link');
-    const libraryLink = document.getElementById('library-link');
     const pearLink   = document.getElementById('pear-link');
 
     let currentHtml = '';
     let pollTimer = null;
     let seenCount = 0;
     let cursorEl = null;
+    let publicUrl = '';
+
+    fetch('/api/config').then(r => r.json()).then(c => { publicUrl = c.publicUrl; });
 
     /* ── URL validation ── */
 
@@ -660,8 +657,9 @@
       dlLink.download = (recipe.title ?? 'recipe')
         .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
 
-      const rawUrl = urlInput.value.trim().replace(/^https?:\/\//, '');
-      pearLink.href = `https://pear.dunkirk.sh/${rawUrl}`;
+      if (job.dbId) {
+        pearLink.href = `https://pear.dunkirk.sh/${(publicUrl + '/r/' + job.dbId).replace(/^https?:\/\//, '')}`;
+      }
 
       fetch(`/api/result/${jobId}`)
         .then(r => r.text())
@@ -690,11 +688,14 @@
 
               if (job.status === 'done') {
             clearInterval(pollTimer);
-            renderRecipe(job.result.recipe, jobId, job.result.source);
-            if (job.dbId) libraryLink.style.display = '';
-            applyValidation(urlInput.value.trim(), false);
-            urlInput.select();
-            urlInput.focus();
+            if (job.dbId) {
+              window.location.href = `/recipes/${job.dbId}`;
+            } else {
+              renderRecipe(job.result.recipe, jobId, job.result.source);
+              applyValidation(urlInput.value.trim(), false);
+              urlInput.select();
+              urlInput.focus();
+            }
           } else if (job.status === 'error') {
             clearInterval(pollTimer);
             applyValidation(urlInput.value.trim(), false);
@@ -716,7 +717,6 @@
       recipeCard.innerHTML = '';
       logBodyEl.innerHTML = '';
       seenCount = 0; cursorEl = null;
-      libraryLink.style.display = 'none';
       logPanel.style.display = 'block';
       extractBtn.disabled = true;
 
@@ -728,13 +728,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url }),
         });
-        const { jobId, error } = await r.json();
-        if (error) {
-          appendLog({ ts: Date.now(), msg: `error: ${error}` }, 'err');
+        const data = await r.json();
+        if (data.error) {
+          appendLog({ ts: Date.now(), msg: `error: ${data.error}` }, 'err');
           applyValidation(url, false);
           return;
         }
-        startPoll(jobId);
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        startPoll(data.jobId);
       } catch {
         appendLog({ ts: Date.now(), msg: 'request failed' }, 'err');
         applyValidation(url, false);

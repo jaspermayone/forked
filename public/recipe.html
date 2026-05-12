@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forked</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0c0b08;
+      --bg-card:      #141310;
+      --fg:           #ede8df;
+      --fg-muted:     #7a7165;
+      --fg-faint:     #2e2c28;
+      --amber:        #c8903e;
+      --amber-bright: #d9a656;
+      --amber-dim:    #6b4d22;
+      --cream:        #f6eedf;
+      --cream-mid:    #e8ddc8;
+      --ink:          #1a1712;
+      --ink-mid:      #2e2b25;
+      --ink-light:    #5a5248;
+      --border:       rgba(255,255,255,0.065);
+      --r:            12px;
+      --r-sm:         7px;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 1.5rem 6rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -10%; left: 50%;
+      translate: -50% 0;
+      width: 55vw; height: 55vh;
+      background: radial-gradient(ellipse, rgba(200,144,62,.07) 0%, transparent 68%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: .045;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 660px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: rise .5s cubic-bezier(.22,1,.36,1) .05s forwards;
+    }
+
+    .nav-back {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--amber-dim);
+      text-decoration: none;
+      letter-spacing: .06em;
+      transition: color .15s;
+    }
+
+    .nav-back:hover { color: var(--amber); }
+
+    .nav-wordmark {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      background: linear-gradient(130deg, #f0e8d5 10%, var(--amber) 50%, #f0e8d5 88%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: 1px solid rgba(200,144,62,.18);
+      border-radius: var(--r);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.3),
+        0 20px 50px rgba(0,0,0,.55),
+        0 6px 16px rgba(0,0,0,.4);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise .65s cubic-bezier(.22,1,.36,1) .15s forwards;
+    }
+
+    /* ── Recipe ── */
+    .recipe-card {
+      background: var(--cream);
+      padding: 2rem 2.25rem 1.75rem;
+    }
+
+    .recipe-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: .35rem;
+      flex-wrap: wrap;
+    }
+
+    .recipe-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .conf-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .67rem;
+      font-weight: 500;
+      padding: .2rem .55rem;
+      border-radius: 99px;
+      flex-shrink: 0;
+      margin-top: .25rem;
+    }
+
+    .ch-high { background: #d1fae5; color: #065f46; }
+    .ch-mid  { background: #fef3c7; color: #92400e; }
+    .ch-low  { background: #fee2e2; color: #991b1b; }
+
+    .recipe-meta {
+      font-size: .8rem;
+      color: var(--ink-light);
+      margin-bottom: 1.25rem;
+      letter-spacing: .02em;
+    }
+
+    .recipe-divider {
+      height: 1px;
+      background: rgba(0,0,0,.09);
+      margin: 1rem 0;
+    }
+
+    .section-head {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: .7rem;
+      font-weight: 400;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: .5rem;
+    }
+
+    .recipe-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.1rem;
+    }
+
+    .recipe-list li {
+      display: flex;
+      gap: .65rem;
+      padding: .28rem 0;
+      font-size: .87rem;
+      line-height: 1.5;
+      color: var(--ink-mid);
+      border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+
+    .recipe-list li::before {
+      content: attr(data-bullet);
+      color: var(--amber);
+      flex-shrink: 0;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      min-width: 1.4rem;
+      text-align: right;
+    }
+
+    .recipe-notes {
+      font-size: .82rem;
+      color: var(--ink-light);
+      font-style: italic;
+      line-height: 1.65;
+    }
+
+    /* ── Actions ── */
+    .actions {
+      background: var(--cream-mid);
+      border-top: 1px solid rgba(0,0,0,.1);
+      padding: .85rem 2rem;
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .act {
+      padding: .38rem .9rem;
+      border-radius: var(--r-sm);
+      font-size: .76rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+      letter-spacing: .01em;
+      border: none;
+    }
+
+    .act-ghost {
+      background: transparent;
+      border: 1px solid rgba(0,0,0,.18);
+      color: var(--ink-mid);
+    }
+
+    .act-ghost:hover { background: rgba(0,0,0,.06); }
+
+    .act-solid {
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      color: var(--cream);
+    }
+
+    .act-solid:hover { background: var(--ink-mid); }
+
+    /* ── Error / loading ── */
+    .state-msg {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--fg-muted);
+      font-size: .9rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 2.5rem;
+      font-size: .68rem;
+      color: var(--fg-faint);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: rise .5s ease .4s forwards;
+    }
+
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="nav-back" href="/">← extract new</a>
+      <span class="nav-wordmark">Forked</span>
+    </nav>
+
+    <div class="card" id="card">
+      <div class="state-msg" id="loading">Loading…</div>
+    </div>
+  </div>
+
+  <footer>forked.jaspermayone.com</footer>
+
+  <script>
+    const id = location.pathname.split('/').pop();
+    let publicUrl = '';
+
+    function esc(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function chipClass(conf) {
+      return conf >= .8 ? 'ch-high' : conf >= .6 ? 'ch-mid' : 'ch-low';
+    }
+
+    function injectJsonLd(recipe) {
+      const s = document.createElement('script');
+      s.type = 'application/ld+json';
+      s.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Recipe',
+        'name': recipe.title ?? 'Untitled Recipe',
+        'recipeIngredient': recipe.ingredients ?? [],
+        'recipeInstructions': (recipe.steps ?? []).map((t, i) => ({
+          '@type': 'HowToStep', 'position': i + 1, 'text': t
+        })),
+        ...(recipe.servings ? { recipeYield: recipe.servings } : {}),
+        ...(recipe.time     ? { totalTime:   recipe.time }     : {}),
+        ...(recipe.notes?.length ? { description: recipe.notes.join(' ') } : {}),
+      });
+      document.head.appendChild(s);
+    }
+
+    async function load() {
+      const [configRes, recipeRes] = await Promise.all([
+        fetch('/api/config'),
+        fetch(`/api/recipes/${id}`),
+      ]);
+
+      const config = await configRes.json();
+      publicUrl = config.publicUrl;
+
+      if (!recipeRes.ok) {
+        document.getElementById('loading').textContent = 'Recipe not found.';
+        return;
+      }
+
+      const data = await recipeRes.json();
+      const r = data.recipe;
+
+      document.title = (r.title ?? 'Recipe') + ' — Forked';
+      injectJsonLd(r);
+
+      const conf    = r.confidence ?? 0;
+      const chipCls = chipClass(conf);
+      const meta    = [
+        r.servings && `Serves ${esc(r.servings)}`,
+        r.time && esc(r.time),
+      ].filter(Boolean).join(' · ');
+
+      const ingItems = (r.ingredients ?? [])
+        .map(i => `<li data-bullet="—">${esc(i)}</li>`).join('');
+
+      const stepItems = (r.steps ?? [])
+        .map((s, i) => `<li data-bullet="${i + 1}.">${esc(s)}</li>`).join('');
+
+      const notesHtml = r.notes?.length
+        ? `<div class="recipe-divider"></div>
+           <div class="section-head">Notes</div>
+           <p class="recipe-notes">${(r.notes ?? []).map(esc).join('<br>')}</p>`
+        : '';
+
+      const pearUrl = `https://pear.dunkirk.sh/${(publicUrl + '/r/' + id).replace(/^https?:\/\//, '')}`;
+      const dlUrl   = `/api/recipes/${id}/html`;
+      const dlName  = (r.title ?? 'recipe').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
+
+      document.getElementById('card').innerHTML = `
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <h1 class="recipe-title">${esc(r.title ?? 'Untitled Recipe')}</h1>
+            <span class="conf-chip ${chipCls}">${Math.round(conf * 100)}% · ${esc(data.source)}</span>
+          </div>
+          ${meta ? `<div class="recipe-meta">${meta}</div>` : ''}
+          <div class="recipe-divider"></div>
+          <div class="section-head">Ingredients</div>
+          <ul class="recipe-list">${ingItems}</ul>
+          <div class="section-head">Method</div>
+          <ul class="recipe-list">${stepItems}</ul>
+          ${notesHtml}
+        </div>
+        <div class="actions">
+          <button class="act act-ghost" id="copy-btn">Copy HTML</button>
+          <a class="act act-ghost" href="${dlUrl}" download="${esc(dlName)}">Download .html</a>
+          <a class="act act-solid" href="${esc(pearUrl)}" target="_blank" rel="noreferrer">Open in Pear ↗</a>
+        </div>
+      `;
+
+      document.getElementById('copy-btn').addEventListener('click', async () => {
+        try {
+          const html = await fetch(dlUrl).then(r => r.text());
+          await navigator.clipboard.writeText(html);
+          const btn = document.getElementById('copy-btn');
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy HTML'; }, 2000);
+        } catch { alert('Failed to copy.'); }
+      });
+    }
+
+    load().catch(err => {
+      document.getElementById('loading').textContent = 'Failed to load recipe.';
+      console.error(err);
+    });
+  </script>
+</body>
+</html>

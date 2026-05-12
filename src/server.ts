@@ -4,7 +4,7 @@ import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import { runPipeline } from "./pipeline";
 import { renderHtml } from "./render";
-import { initDb, saveRecipe, listRecipes, getRecipe, deleteRecipe } from "./db";
+import { initDb, saveRecipe, listRecipes, getRecipe, deleteRecipe, getRecipeByUrl } from "./db";
 import { JobStatus } from "./types";
 
 initDb();
@@ -32,6 +32,12 @@ app.post("/api/extract", (req, res) => {
 
   if (!url || !url.includes("instagram.com")) {
     res.status(400).json({ error: "Invalid Instagram URL" });
+    return;
+  }
+
+  const existing = getRecipeByUrl(url);
+  if (existing) {
+    res.json({ redirect: `/recipes/${existing.id}` });
     return;
   }
 
@@ -114,6 +120,12 @@ app.get("/api/result/:jobId", (req, res) => {
   res.send(html);
 });
 
+// ── GET /api/config ───────────────────────────────────────────────────────────
+app.get("/api/config", (_req, res) => {
+  const base = (process.env.PUBLIC_URL ?? `http://localhost:${PORT}`).replace(/\/$/, "");
+  res.json({ publicUrl: base });
+});
+
 // ── GET /api/recipes ─────────────────────────────────────────────────────────
 app.get("/api/recipes", (_req, res) => {
   res.json(listRecipes());
@@ -136,6 +148,19 @@ app.get("/api/recipes/:id/html", (req, res) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}.html"`);
   res.send(row.html);
+});
+
+// ── GET /r/:id — inline recipe view (no download header, for Pear etc.) ───────
+app.get("/r/:id", (req, res) => {
+  const row = getRecipe(Number(req.params.id));
+  if (!row) { res.status(404).send("<h1>Recipe not found</h1>"); return; }
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(row.html);
+});
+
+// ── GET /recipes/:id — styled recipe show page ───────────────────────────────
+app.get("/recipes/:id", (_req, res) => {
+  res.sendFile(join(__dirname, "../public/recipe.html"));
 });
 
 // ── DELETE /api/recipes/:id ───────────────────────────────────────────────────
