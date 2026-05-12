@@ -5,3 +5,14 @@ tmp/
 *.age
 .env
 .env.local
+
+# SQLite database (runtime data)
+*.db
+*.db-shm
+*.db-wal
+
+# Tesseract model files (large, downloaded at runtime)
+*.traineddata
+
+# macOS
+.DS_Store
