@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forked — Recipe extractor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fafaf8;
+      --fg: #1a1a1a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #16a34a;
+      --error: #dc2626;
+      --radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 0.6rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .input-row button {
+      padding: 0.6rem 1.2rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .input-row button:hover { background: var(--accent-hover); }
+    .input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+
+    #status.error { color: var(--error); }
+    #status.done { color: var(--success); }
+
+    #result {
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .result-actions button, .result-actions a {
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg);
+    }
+
+    .btn-outline:hover { background: var(--border); }
+
+    .btn-primary {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    #recipe-preview {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      overflow: auto;
+      max-height: 500px;
+      background: var(--bg);
+    }
+
+    #recipe-preview h1 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    #recipe-preview h2 { font-size: 1rem; margin: 1rem 0 0.4rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; }
+    #recipe-preview ul, #recipe-preview ol { padding-left: 1.4rem; }
+    #recipe-preview li { margin-bottom: 0.25rem; }
+    #recipe-preview p { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+
+    .confidence-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .conf-high { background: #dcfce7; color: #15803d; }
+    .conf-mid  { background: #fef9c3; color: #a16207; }
+    .conf-low  { background: #fee2e2; color: #b91c1c; }
+
+    footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Forked</h1>
+    <p>Paste an Instagram Reel URL to extract the recipe as clean HTML.</p>
+  </header>
+
+  <div class="card">
+    <div class="input-row">
+      <input id="url-input" type="url" placeholder="https://www.instagram.com/reel/…" autocomplete="off">
+      <button id="extract-btn">Extract</button>
+    </div>
+    <div id="status"></div>
+    <div id="result">
+      <div class="result-actions">
+        <button class="btn-outline" id="copy-btn">Copy HTML</button>
+        <a class="btn-outline" id="download-link" href="#" download>Download .html</a>
+        <a class="btn-primary" href="https://pare.dunkirk.sh" target="_blank" rel="noreferrer">Open in pare ↗</a>
+      </div>
+      <div id="recipe-preview"></div>
+    </div>
+  </div>
+
+  <footer>forked.hogwarts.dev</footer>
+
+  <script>
+    const urlInput = document.getElementById('url-input');
+    const extractBtn = document.getElementById('extract-btn');
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+    const previewEl = document.getElementById('recipe-preview');
+    const copyBtn = document.getElementById('copy-btn');
+    const downloadLink = document.getElementById('download-link');
+
+    let currentHtml = '';
+    let pollInterval = null;
+
+    function setStatus(msg, type = '') {
+      statusEl.textContent = msg;
+      statusEl.className = type;
+    }
+
+    function showResult(recipe, jobId, source) {
+      resultEl.style.display = 'block';
+
+      const conf = recipe.confidence ?? 0;
+      const confClass = conf >= 0.8 ? 'conf-high' : conf >= 0.6 ? 'conf-mid' : 'conf-low';
+      const confLabel = `${Math.round(conf * 100)}% · ${source}`;
+
+      // Build preview HTML
+      const title = recipe.title ?? 'Untitled Recipe';
+      const meta = [recipe.servings && `Serves: ${recipe.servings}`, recipe.time && `Time: ${recipe.time}`].filter(Boolean).join(' · ');
+      const ingredients = (recipe.ingredients ?? []).map(i => `<li>${i}</li>`).join('');
+      const steps = (recipe.steps ?? []).map(s => `<li>${s}</li>`).join('');
+      const notes = recipe.notes?.length ? `<h2>Notes</h2><p>${recipe.notes.join('<br>')}</p>` : '';
+
+      previewEl.innerHTML = `
+        <h1>${esc(title)} <span class="confidence-badge ${confClass}">${esc(confLabel)}</span></h1>
+        ${meta ? `<p>${esc(meta)}</p>` : ''}
+        <h2>Ingredients</h2><ul>${ingredients}</ul>
+        <h2>Instructions</h2><ol>${steps}</ol>
+        ${notes}
+      `;
+
+      // Set up download link
+      downloadLink.href = `/api/result/${jobId}`;
+      downloadLink.download = (recipe.title ?? 'recipe').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
+
+      // Store raw HTML for copy
+      fetch(`/api/result/${jobId}`)
+        .then(r => r.text())
+        .then(html => { currentHtml = html; });
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function startPoll(jobId) {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        try {
+          const r = await fetch(`/api/status/${jobId}`);
+          const job = await r.json();
+
+          setStatus(job.progress);
+
+          if (job.status === 'done') {
+            clearInterval(pollInterval);
+            setStatus('Done!', 'done');
+            showResult(job.result.recipe, jobId, job.result.source);
+            extractBtn.disabled = false;
+          } else if (job.status === 'error') {
+            clearInterval(pollInterval);
+            setStatus(`Error: ${job.error}`, 'error');
+            extractBtn.disabled = false;
+          }
+        } catch (e) {
+          // network blip — keep polling
+        }
+      }, 1500);
+    }
+
+    extractBtn.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) return;
+
+      resultEl.style.display = 'none';
+      extractBtn.disabled = true;
+      setStatus('Submitting…');
+
+      try {
+        const r = await fetch('/api/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        const { jobId, error } = await r.json();
+        if (error) { setStatus(error, 'error'); extractBtn.disabled = false; return; }
+        startPoll(jobId);
+      } catch (e) {
+        setStatus('Request failed', 'error');
+        extractBtn.disabled = false;
+      }
+    });
+
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') extractBtn.click();
+    });
+
+    copyBtn.addEventListener('click', () => {
+      if (!currentHtml) return;
+      navigator.clipboard.writeText(currentHtml).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy HTML'; }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
