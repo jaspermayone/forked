@@ -4,3 +4,4 @@ tmp/
 *.har
 *.age
 .env
+.env.local

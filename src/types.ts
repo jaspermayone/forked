@@ -14,9 +14,16 @@ export interface PipelineResult {
   jobId: string;
 }
 
+export interface LogEntry {
+  ts: number;   // ms since epoch
+  msg: string;
+}
+
 export interface JobStatus {
   status: "pending" | "running" | "done" | "error";
   progress: string;
+  logs: LogEntry[];
   result?: PipelineResult;
   error?: string;
+  dbId?: number;
 }

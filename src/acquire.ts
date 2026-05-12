@@ -42,9 +42,10 @@ export async function acquireVideo(
   mkdirSync(outDir, { recursive: true });
   const harPath = join(outDir, "reel.har");
 
+  // Start HAR before the page loads so the initial video segment request is captured
   ab(["open", url]);
-  ab(["wait", "--load", "networkidle"]);
   ab(["network", "har", "start"]);
+  ab(["wait", "--load", "networkidle"]);
   // Let the reel play through once (~30s typical)
   execSync("sleep 35");
   ab(["network", "har", "stop", harPath]);
@@ -56,12 +57,28 @@ export async function acquireVideo(
   if (!videoUrl) return null;
 
   const outPath = join(outDir, "video.mp4");
-  const dl = spawnSync("curl", ["-sL", "-o", outPath, videoUrl], {
-    encoding: "utf-8",
-    timeout: 60_000,
-  });
+  // CDN URLs require a plausible browser User-Agent and Referer to serve video bytes
+  const dl = spawnSync(
+    "curl",
+    [
+      "-sL",
+      "-o", outPath,
+      "--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "--referer", "https://www.instagram.com/",
+      "--max-time", "60",
+      videoUrl,
+    ],
+    { encoding: "utf-8", timeout: 70_000 }
+  );
 
-  return dl.status === 0 && existsSync(outPath) ? outPath : null;
+  if (dl.status !== 0 || !existsSync(outPath)) return null;
+
+  // Sanity-check: a real MP4 should be at least 100 KB
+  const { statSync } = await import("fs");
+  const size = statSync(outPath).size;
+  if (size < 100_000) return null;
+
+  return outPath;
 }
 
 /** Screenshot sampling fallback when HAR capture finds no video URL. */

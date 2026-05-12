@@ -35,9 +35,30 @@ function cleanLine(line: string): string {
     .trim();
 }
 
+/**
+ * Normalize inline formatting that accessibility snapshots and OCR produce
+ * before we try to split into lines. Handles cases like:
+ *   "* 1 lb beef * 1 tsp garlic 1. Cook the beef 2. Season..."
+ * which would otherwise be treated as a single unstructured line.
+ */
+function normalizeText(raw: string): string {
+  return raw
+    // ⬇️ / ▼ / ➡️ used on Instagram before the recipe block → newline
+    .replace(/[⬇️▼⬆️▲➡️◀️»]\s*/gu, "\n")
+    // Inline bullet points: "text * next item" or "text • next" → newline before bullet
+    .replace(/(?<=\S)\s+([*•·])\s+/g, "\n$1 ")
+    // Inline numbered items not at line start: " 1. " or " 2) " → newline
+    .replace(/(?<=\S)\s+(\d{1,2}[.)]\s+)/g, "\n$1")
+    // Collapse 3+ newlines to 2
+    .replace(/\n{3,}/g, "\n\n");
+}
+
 export function parseRecipe(text: string): Omit<Recipe, "confidence"> {
-  const lines = text
-    .split(/\n|(?<=\.)\s+(?=[A-Z0-9])/)
+  const normalized = normalizeText(text);
+  const lines = normalized
+    // Split on newlines, or on sentence-ending periods — but NOT after digits
+    // (which would incorrectly split "1. Cook..." into "1." and "Cook...").
+    .split(/\n|(?<=[^.\d]\.)[ \t]+(?=[A-Z])/)
     .map((l) => l.trim())
     .filter((l) => l.length > 1);
 
@@ -51,7 +72,24 @@ export function parseRecipe(text: string): Omit<Recipe, "confidence"> {
   // Extract title: first non-trivial line that isn't a quantity or emoji-only
   for (const line of lines) {
     if (line.length > 4 && !QUANTITY_PATTERN.test(line) && !/^[^\w]+$/.test(line)) {
-      title = line.replace(/\s*[🍔🍕🍝🍜🥘🍲🥗🥙🌮🌯🥪🥫🍱🍛🍜🍣🍤🍙🍘🍥🥮🍡🥟🥠🥡🍦🍧🍨🍩🍪🎂🍰🧁🥧🍫🍬🍭🍮🍯]+\s*/g, "").trim();
+      let candidate = line;
+
+      // Instagram titles are often "Dish name 🍔 Short blurb..." all on one line.
+      // If an emoji immediately follows the dish name, take only the text before it.
+      const emojiBreak = candidate.match(/^([\w][\w\s,'/()-]+?)\s*[\u{1F300}-\u{1FAFF}]/u);
+      if (emojiBreak && emojiBreak[1].trim().length > 3) {
+        candidate = emojiBreak[1].trim();
+      } else if (candidate.length > 80) {
+        // Long line with no leading emoji — take text up to the first sentence end
+        const sentBreak = candidate.match(/^(.*?[!?])\s+[A-Z]/);
+        if (sentBreak) candidate = sentBreak[1];
+        else candidate = candidate.slice(0, 80).replace(/\s+\S+$/, "");
+      }
+
+      // Strip any remaining food emojis
+      title = candidate
+        .replace(/\s*[\u{1F300}-\u{1FAFF}]+\s*/gu, " ")
+        .trim();
       break;
     }
   }

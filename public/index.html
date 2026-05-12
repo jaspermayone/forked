@@ -3,287 +3,724 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Forked — Recipe extractor</title>
+  <title>Forked</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #fafaf8;
-      --fg: #1a1a1a;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --success: #16a34a;
-      --error: #dc2626;
-      --radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg:           #0c0b08;
+      --bg-card:      #141310;
+      --bg-term:      #090806;
+      --fg:           #ede8df;
+      --fg-muted:     #7a7165;
+      --fg-faint:     #2e2c28;
+      --amber:        #c8903e;
+      --amber-bright: #d9a656;
+      --amber-dim:    #6b4d22;
+      --cream:        #f6eedf;
+      --cream-mid:    #e8ddc8;
+      --ink:          #1a1712;
+      --ink-mid:      #2e2b25;
+      --ink-light:    #5a5248;
+      --border:       rgba(255,255,255,0.065);
+      --r:            12px;
+      --r-sm:         7px;
     }
+
+    html { font-size: 16px; }
 
     body {
       background: var(--bg);
       color: var(--fg);
+      font-family: 'DM Sans', -apple-system, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 3rem 1rem;
+      padding: 4.5rem 1.5rem 6rem;
     }
 
+    /* ── Ambient glow ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -10%;
+      left: 50%;
+      translate: -50% 0;
+      width: 55vw;
+      height: 55vh;
+      background: radial-gradient(ellipse, rgba(200,144,62,.07) 0%, transparent 68%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Grain ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: .045;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 660px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Header ── */
     header {
       text-align: center;
-      margin-bottom: 2.5rem;
+      margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: rise .65s cubic-bezier(.22,1,.36,1) .08s forwards;
     }
 
-    header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
+    .wordmark {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(3rem, 8vw, 4.25rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.02em;
+      background: linear-gradient(130deg, #f0e8d5 10%, var(--amber) 50%, #f0e8d5 88%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    header p {
-      color: var(--muted);
-      margin-top: 0.4rem;
-      font-size: 0.95rem;
+    .tagline-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .9rem;
+      margin-top: .8rem;
     }
 
+    .tagline-rule {
+      flex: 1;
+      max-width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--fg-faint));
+    }
+
+    .tagline-rule:last-child {
+      background: linear-gradient(90deg, var(--fg-faint), transparent);
+    }
+
+    .tagline {
+      font-size: .7rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      font-weight: 300;
+    }
+
+    /* ── Card ── */
     .card {
-      background: #fff;
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      width: 100%;
-      max-width: 640px;
+      border-top: 1px solid rgba(200,144,62,.18);
+      border-radius: var(--r);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.3),
+        0 20px 50px rgba(0,0,0,.55),
+        0 6px 16px rgba(0,0,0,.4);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise .7s cubic-bezier(.22,1,.36,1) .22s forwards;
+    }
+
+    /* ── Input area ── */
+    .input-section {
+      padding: 1.6rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .field-label {
+      display: block;
+      font-size: .66rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--amber);
+      font-weight: 500;
+      margin-bottom: .55rem;
     }
 
     .input-row {
       display: flex;
-      gap: 0.5rem;
+      gap: .8rem;
+      align-items: center;
     }
 
-    .input-row input {
+    .url-input {
       flex: 1;
-      padding: 0.6rem 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .input-row input:focus {
-      border-color: var(--accent);
-    }
-
-    .input-row button {
-      padding: 0.6rem 1.2rem;
-      background: var(--accent);
-      color: #fff;
+      background: transparent;
       border: none;
-      border-radius: var(--radius);
-      font-size: 0.95rem;
+      border-bottom: 1px solid var(--fg-faint);
+      color: var(--fg);
+      font-size: .88rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 300;
+      padding: .45rem 0;
+      outline: none;
+      transition: border-color .2s;
+      caret-color: var(--amber);
+      min-width: 0;
+    }
+
+    .url-input::placeholder { color: var(--fg-faint); }
+    .url-input:focus { border-color: var(--amber-dim); }
+    .url-input.valid   { border-color: #3a7d52; }
+    .url-input.invalid { border-color: #8b3333; }
+
+    .url-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      margin-top: .45rem;
+      min-height: 1em;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+
+    .url-hint.visible { opacity: 1; }
+    .url-hint.h-valid   { color: #5a9e74; }
+    .url-hint.h-invalid { color: #c26060; }
+
+    .extract-btn {
+      padding: .55rem 1.35rem;
+      background: var(--amber);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: .76rem;
       font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: background 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      transition: background .15s, transform .1s, box-shadow .15s;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .input-row button:hover { background: var(--accent-hover); }
-    .input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    #status {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: var(--muted);
-      min-height: 1.2em;
+    .extract-btn:hover {
+      background: var(--amber-bright);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(200,144,62,.3);
     }
 
-    #status.error { color: var(--error); }
-    #status.done { color: var(--success); }
+    .extract-btn:active { transform: translateY(0); box-shadow: none; }
+    .extract-btn:disabled { opacity: .38; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    #result {
-      margin-top: 1.5rem;
-      display: none;
-    }
+    /* ── Terminal ── */
+    #log-panel { display: none; }
 
-    .result-actions {
+    .log-chrome {
+      background: #0f0e0b;
+      border-bottom: 1px solid var(--border);
+      padding: .55rem 1.2rem;
       display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
+      align-items: center;
+      gap: .7rem;
     }
 
-    .result-actions button, .result-actions a {
-      padding: 0.45rem 1rem;
-      border-radius: var(--radius);
-      font-size: 0.875rem;
+    .tls { display: flex; gap: 5px; }
+    .tl { width: 10px; height: 10px; border-radius: 50%; }
+    .tl-r { background: #ff5f57; }
+    .tl-y { background: #febc2e; }
+    .tl-g { background: #28c840; }
+
+    .log-chrome-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--fg-muted);
+      flex: 1;
+      text-align: center;
+      letter-spacing: .04em;
+    }
+
+    .log-body {
+      background: var(--bg-term);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      line-height: 1.7;
+      padding: .9rem 1.25rem 1rem;
+      max-height: 210px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--fg-faint) transparent;
+    }
+
+    .log-line {
+      display: flex;
+      gap: .9rem;
+      opacity: 0;
+      animation: slide-in .18s ease forwards;
+    }
+
+    .log-line + .log-line { margin-top: .08rem; }
+
+    .log-ts  { color: var(--amber-dim); flex-shrink: 0; user-select: none; }
+    .log-msg { color: #b8b0a2; }
+    .log-line.l-done .log-msg { color: #6dba87; }
+    .log-line.l-err  .log-msg { color: #d97070; }
+    .log-line.l-cmd  .log-msg { color: var(--fg); }
+
+    .log-cursor {
+      display: inline-block;
+      width: 6px;
+      height: .82em;
+      background: var(--amber);
+      vertical-align: text-bottom;
+      margin-left: 3px;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    /* ── Recipe card (light) ── */
+    #result { display: none; border-top: 1px solid var(--border); }
+
+    .recipe-card {
+      background: var(--cream);
+      padding: 2rem 2.25rem 1.75rem;
+    }
+
+    .recipe-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: .35rem;
+      flex-wrap: wrap;
+    }
+
+    .recipe-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .conf-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .67rem;
+      font-weight: 500;
+      padding: .2rem .55rem;
+      border-radius: 99px;
+      flex-shrink: 0;
+      margin-top: .2rem;
+    }
+
+    .ch-high { background: #d1fae5; color: #065f46; }
+    .ch-mid  { background: #fef3c7; color: #92400e; }
+    .ch-low  { background: #fee2e2; color: #991b1b; }
+
+    .recipe-meta {
+      font-size: .8rem;
+      color: var(--ink-light);
+      margin-bottom: 1.25rem;
+      letter-spacing: .02em;
+    }
+
+    .recipe-divider {
+      height: 1px;
+      background: rgba(0,0,0,.09);
+      margin: 1rem 0;
+    }
+
+    .section-head {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: .7rem;
+      font-weight: 400;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: .5rem;
+    }
+
+    .recipe-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 1.1rem;
+    }
+
+    .recipe-list li {
+      display: flex;
+      gap: .65rem;
+      padding: .28rem 0;
+      font-size: .87rem;
+      line-height: 1.5;
+      color: var(--ink-mid);
+      border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+
+    .recipe-list li::before {
+      content: attr(data-bullet);
+      color: var(--amber);
+      flex-shrink: 0;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      min-width: 1.1rem;
+      text-align: right;
+    }
+
+    .recipe-notes {
+      font-size: .82rem;
+      color: var(--ink-light);
+      font-style: italic;
+      line-height: 1.65;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── Actions bar ── */
+    .actions {
+      background: var(--cream-mid);
+      border-top: 1px solid rgba(0,0,0,.1);
+      padding: .85rem 2rem;
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .act {
+      padding: .38rem .9rem;
+      border-radius: var(--r-sm);
+      font-size: .76rem;
       font-weight: 500;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+      letter-spacing: .01em;
     }
 
-    .btn-outline {
+    .act-ghost {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--fg);
+      border: 1px solid rgba(0,0,0,.18);
+      color: var(--ink-mid);
     }
 
-    .btn-outline:hover { background: var(--border); }
+    .act-ghost:hover { background: rgba(0,0,0,.06); }
 
-    .btn-primary {
-      background: var(--accent);
-      border: 1px solid var(--accent);
-      color: #fff;
+    .act-solid {
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      color: var(--cream);
     }
 
-    .btn-primary:hover { background: var(--accent-hover); }
+    .act-solid:hover { background: var(--ink-mid); }
 
-    #recipe-preview {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem 1.5rem;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      overflow: auto;
-      max-height: 500px;
-      background: var(--bg);
-    }
-
-    #recipe-preview h1 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-    #recipe-preview h2 { font-size: 1rem; margin: 1rem 0 0.4rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem; }
-    #recipe-preview ul, #recipe-preview ol { padding-left: 1.4rem; }
-    #recipe-preview li { margin-bottom: 0.25rem; }
-    #recipe-preview p { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
-
-    .confidence-badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      padding: 0.15rem 0.5rem;
-      border-radius: 99px;
-      margin-left: 0.5rem;
-      vertical-align: middle;
-    }
-    .conf-high { background: #dcfce7; color: #15803d; }
-    .conf-mid  { background: #fef9c3; color: #a16207; }
-    .conf-low  { background: #fee2e2; color: #b91c1c; }
-
+    /* ── Footer ── */
     footer {
-      margin-top: 3rem;
-      color: var(--muted);
-      font-size: 0.8rem;
+      margin-top: 2.5rem;
+      font-size: .68rem;
+      color: var(--fg-faint);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      animation: rise .5s ease .45s forwards;
     }
+
+    /* ── Keyframes ── */
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateX(-6px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #result.show { animation: reveal .35s cubic-bezier(.22,1,.36,1) forwards; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Forked</h1>
-    <p>Paste an Instagram Reel URL to extract the recipe as clean HTML.</p>
-  </header>
+  <div class="wrap">
 
-  <div class="card">
-    <div class="input-row">
-      <input id="url-input" type="url" placeholder="https://www.instagram.com/reel/…" autocomplete="off">
-      <button id="extract-btn">Extract</button>
-    </div>
-    <div id="status"></div>
-    <div id="result">
-      <div class="result-actions">
-        <button class="btn-outline" id="copy-btn">Copy HTML</button>
-        <a class="btn-outline" id="download-link" href="#" download>Download .html</a>
-        <a class="btn-primary" href="https://pare.dunkirk.sh" target="_blank" rel="noreferrer">Open in pare ↗</a>
+    <header>
+      <div class="wordmark">Forked</div>
+      <div class="tagline-row">
+        <div class="tagline-rule"></div>
+        <span class="tagline">Recipe extractor</span>
+        <div class="tagline-rule"></div>
       </div>
-      <div id="recipe-preview"></div>
+    </header>
+
+    <div class="card">
+
+      <!-- URL input -->
+      <div class="input-section">
+        <label class="field-label" for="url-input">Instagram Reel URL</label>
+        <div class="input-row">
+          <input id="url-input" class="url-input" type="url"
+                 placeholder="https://www.instagram.com/reel/…"
+                 autocomplete="off" spellcheck="false">
+          <button id="extract-btn" class="extract-btn">Extract</button>
+        </div>
+        <div id="url-hint" class="url-hint"></div>
+      </div>
+
+      <!-- Terminal log -->
+      <div id="log-panel">
+        <div class="log-chrome">
+          <div class="tls">
+            <div class="tl tl-r"></div>
+            <div class="tl tl-y"></div>
+            <div class="tl tl-g"></div>
+          </div>
+          <span class="log-chrome-label">forked — pipeline</span>
+          <div style="width:52px"></div>
+        </div>
+        <div class="log-body" id="log-body"></div>
+      </div>
+
+      <!-- Recipe output -->
+      <div id="result">
+        <div class="recipe-card" id="recipe-card"></div>
+        <div class="actions">
+          <button class="act act-ghost" id="copy-btn">Copy HTML</button>
+          <a class="act act-ghost" id="download-link" href="#" download>Download .html</a>
+          <a class="act act-ghost" id="library-link" href="/recipes.html" style="display:none">Library ↗</a>
+          <a class="act act-solid" id="pear-link" href="https://pear.dunkirk.sh" target="_blank" rel="noreferrer">Open in Pear ↗</a>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <footer>forked.hogwarts.dev</footer>
+  <footer>
+    <a href="/recipes.html" style="color:var(--amber-dim);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;font-size:.68rem;transition:color .15s" onmouseover="this.style.color='var(--amber)'" onmouseout="this.style.color='var(--amber-dim)'">Saved Recipes</a>
+    <span style="margin:0 .6rem;color:var(--fg-faint)">·</span>
+    forked.hogwarts.dev
+  </footer>
 
   <script>
-    const urlInput = document.getElementById('url-input');
+    const urlInput   = document.getElementById('url-input');
     const extractBtn = document.getElementById('extract-btn');
-    const statusEl = document.getElementById('status');
-    const resultEl = document.getElementById('result');
-    const previewEl = document.getElementById('recipe-preview');
-    const copyBtn = document.getElementById('copy-btn');
-    const downloadLink = document.getElementById('download-link');
+    const urlHint    = document.getElementById('url-hint');
+    const logPanel   = document.getElementById('log-panel');
+    const logBodyEl  = document.getElementById('log-body');
+    const resultEl   = document.getElementById('result');
+    const recipeCard = document.getElementById('recipe-card');
+    const copyBtn    = document.getElementById('copy-btn');
+    const dlLink     = document.getElementById('download-link');
+    const libraryLink = document.getElementById('library-link');
+    const pearLink   = document.getElementById('pear-link');
 
     let currentHtml = '';
-    let pollInterval = null;
+    let pollTimer = null;
+    let seenCount = 0;
+    let cursorEl = null;
 
-    function setStatus(msg, type = '') {
-      statusEl.textContent = msg;
-      statusEl.className = type;
+    /* ── URL validation ── */
+
+    function validateUrl(raw) {
+      if (!raw) return { ok: null, msg: '' };
+      let parsed;
+      try { parsed = new URL(raw); } catch { return { ok: false, msg: 'not a valid URL' }; }
+      if (!parsed.hostname.includes('instagram.com')) return { ok: false, msg: 'must be an instagram.com URL' };
+      if (!/\/reels?\//.test(parsed.pathname))        return { ok: false, msg: 'must be a Reel URL  (instagram.com/reel/…)' };
+      return { ok: true, msg: 'looks good' };
     }
 
-    function showResult(recipe, jobId, source) {
-      resultEl.style.display = 'block';
+    function applyValidation(raw, showHint) {
+      const { ok, msg } = validateUrl(raw);
+      urlInput.classList.remove('valid', 'invalid');
+      urlHint.classList.remove('visible', 'h-valid', 'h-invalid');
+      urlHint.textContent = '';
+      if (ok === true) {
+        urlInput.classList.add('valid');
+        if (showHint) { urlHint.textContent = '✓ ' + msg; urlHint.classList.add('visible', 'h-valid'); }
+      } else if (ok === false) {
+        urlInput.classList.add('invalid');
+        urlHint.textContent = '✗ ' + msg;
+        urlHint.classList.add('visible', 'h-invalid');
+      }
+      extractBtn.disabled = ok !== true;
+      return ok === true;
+    }
 
-      const conf = recipe.confidence ?? 0;
-      const confClass = conf >= 0.8 ? 'conf-high' : conf >= 0.6 ? 'conf-mid' : 'conf-low';
-      const confLabel = `${Math.round(conf * 100)}% · ${source}`;
+    // Validate on every keystroke; only show "looks good" after blur
+    urlInput.addEventListener('input',  () => applyValidation(urlInput.value.trim(), false));
+    urlInput.addEventListener('blur',   () => applyValidation(urlInput.value.trim(), true));
+    urlInput.addEventListener('focus',  () => { urlHint.classList.remove('visible'); });
 
-      // Build preview HTML
-      const title = recipe.title ?? 'Untitled Recipe';
-      const meta = [recipe.servings && `Serves: ${recipe.servings}`, recipe.time && `Time: ${recipe.time}`].filter(Boolean).join(' · ');
-      const ingredients = (recipe.ingredients ?? []).map(i => `<li>${i}</li>`).join('');
-      const steps = (recipe.steps ?? []).map(s => `<li>${s}</li>`).join('');
-      const notes = recipe.notes?.length ? `<h2>Notes</h2><p>${recipe.notes.join('<br>')}</p>` : '';
+    // Start disabled — nothing typed yet
+    extractBtn.disabled = true;
 
-      previewEl.innerHTML = `
-        <h1>${esc(title)} <span class="confidence-badge ${confClass}">${esc(confLabel)}</span></h1>
-        ${meta ? `<p>${esc(meta)}</p>` : ''}
-        <h2>Ingredients</h2><ul>${ingredients}</ul>
-        <h2>Instructions</h2><ol>${steps}</ol>
-        ${notes}
-      `;
+    /* ── Helpers ── */
 
-      // Set up download link
-      downloadLink.href = `/api/result/${jobId}`;
-      downloadLink.download = (recipe.title ?? 'recipe').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
-
-      // Store raw HTML for copy
-      fetch(`/api/result/${jobId}`)
-        .then(r => r.text())
-        .then(html => { currentHtml = html; });
+    function hhmm(ms) {
+      return new Date(ms).toTimeString().slice(0, 8);
     }
 
     function esc(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    /* ── Log rendering ── */
+
+    function appendLog(entry, type) {
+      if (cursorEl) { cursorEl.remove(); cursorEl = null; }
+
+      const line = document.createElement('div');
+      line.className = 'log-line' + (type ? ` l-${type}` : '');
+
+      const ts = document.createElement('span');
+      ts.className = 'log-ts';
+      ts.textContent = hhmm(entry.ts);
+
+      const msg = document.createElement('span');
+      msg.className = 'log-msg';
+      msg.textContent = entry.msg;
+
+      line.append(ts, msg);
+
+      if (type !== 'done' && type !== 'err') {
+        cursorEl = document.createElement('span');
+        cursorEl.className = 'log-cursor';
+        msg.appendChild(cursorEl);
+      }
+
+      logBodyEl.appendChild(line);
+      logBodyEl.scrollTop = logBodyEl.scrollHeight;
+    }
+
+    /* ── Recipe rendering ── */
+
+    function renderRecipe(recipe, jobId, source) {
+      const conf     = recipe.confidence ?? 0;
+      const chipCls  = conf >= .8 ? 'ch-high' : conf >= .6 ? 'ch-mid' : 'ch-low';
+      const chipTxt  = `${Math.round(conf * 100)}% · ${source}`;
+      const title    = esc(recipe.title ?? 'Untitled Recipe');
+
+      const meta = [
+        recipe.servings && `Serves ${esc(recipe.servings)}`,
+        recipe.time     && esc(recipe.time),
+      ].filter(Boolean).join(' · ');
+
+      const ingItems = (recipe.ingredients ?? [])
+        .map(i => `<li data-bullet="—">${esc(i)}</li>`).join('');
+
+      const stepItems = (recipe.steps ?? [])
+        .map((s, i) => `<li data-bullet="${i + 1}.">${esc(s)}</li>`).join('');
+
+      const notesHtml = recipe.notes?.length
+        ? `<div class="recipe-divider"></div>
+           <div class="section-head">Notes</div>
+           <p class="recipe-notes">${recipe.notes.map(esc).join('<br>')}</p>`
+        : '';
+
+      recipeCard.innerHTML = `
+        <div class="recipe-header">
+          <h1 class="recipe-title">${title}</h1>
+          <span class="conf-chip ${chipCls}">${esc(chipTxt)}</span>
+        </div>
+        ${meta ? `<div class="recipe-meta">${meta}</div>` : ''}
+        <div class="recipe-divider"></div>
+        <div class="section-head">Ingredients</div>
+        <ul class="recipe-list">${ingItems}</ul>
+        <div class="section-head">Method</div>
+        <ul class="recipe-list">${stepItems}</ul>
+        ${notesHtml}
+      `;
+
+      resultEl.style.display = 'block';
+      // Trigger animation
+      void resultEl.offsetWidth;
+      resultEl.classList.add('show');
+
+      dlLink.href = `/api/result/${jobId}`;
+      dlLink.download = (recipe.title ?? 'recipe')
+        .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
+
+      const rawUrl = urlInput.value.trim().replace(/^https?:\/\//, '');
+      pearLink.href = `https://pear.dunkirk.sh/${rawUrl}`;
+
+      fetch(`/api/result/${jobId}`)
+        .then(r => r.text())
+        .then(h => { currentHtml = h; });
+    }
+
+    /* ── Polling ── */
+
     function startPoll(jobId) {
-      if (pollInterval) clearInterval(pollInterval);
-      pollInterval = setInterval(async () => {
+      if (pollTimer) clearInterval(pollTimer);
+      seenCount = 0;
+
+      pollTimer = setInterval(async () => {
         try {
           const r = await fetch(`/api/status/${jobId}`);
           const job = await r.json();
+          const logs = job.logs ?? [];
 
-          setStatus(job.progress);
-
-          if (job.status === 'done') {
-            clearInterval(pollInterval);
-            setStatus('Done!', 'done');
-            showResult(job.result.recipe, jobId, job.result.source);
-            extractBtn.disabled = false;
-          } else if (job.status === 'error') {
-            clearInterval(pollInterval);
-            setStatus(`Error: ${job.error}`, 'error');
-            extractBtn.disabled = false;
+          for (let i = seenCount; i < logs.length; i++) {
+            const last = i === logs.length - 1;
+            const type = (job.status === 'done'  && last) ? 'done'
+                       : (job.status === 'error' && last) ? 'err' : '';
+            appendLog(logs[i], type);
           }
-        } catch (e) {
-          // network blip — keep polling
-        }
-      }, 1500);
+          seenCount = logs.length;
+
+              if (job.status === 'done') {
+            clearInterval(pollTimer);
+            renderRecipe(job.result.recipe, jobId, job.result.source);
+            if (job.dbId) libraryLink.style.display = '';
+            applyValidation(urlInput.value.trim(), false);
+            urlInput.select();
+            urlInput.focus();
+          } else if (job.status === 'error') {
+            clearInterval(pollTimer);
+            applyValidation(urlInput.value.trim(), false);
+            urlInput.select();
+            urlInput.focus();
+          }
+        } catch { /* blip */ }
+      }, 1000);
     }
+
+    /* ── Extract ── */
 
     extractBtn.addEventListener('click', async () => {
       const url = urlInput.value.trim();
-      if (!url) return;
+      if (!applyValidation(url, true)) return;
 
       resultEl.style.display = 'none';
+      resultEl.classList.remove('show');
+      recipeCard.innerHTML = '';
+      logBodyEl.innerHTML = '';
+      seenCount = 0; cursorEl = null;
+      libraryLink.style.display = 'none';
+      logPanel.style.display = 'block';
       extractBtn.disabled = true;
-      setStatus('Submitting…');
+
+      appendLog({ ts: Date.now(), msg: `$ forked extract "${url}"` }, 'cmd');
 
       try {
         const r = await fetch('/api/extract', {
@@ -292,17 +729,19 @@
           body: JSON.stringify({ url }),
         });
         const { jobId, error } = await r.json();
-        if (error) { setStatus(error, 'error'); extractBtn.disabled = false; return; }
+        if (error) {
+          appendLog({ ts: Date.now(), msg: `error: ${error}` }, 'err');
+          applyValidation(url, false);
+          return;
+        }
         startPoll(jobId);
-      } catch (e) {
-        setStatus('Request failed', 'error');
-        extractBtn.disabled = false;
+      } catch {
+        appendLog({ ts: Date.now(), msg: 'request failed' }, 'err');
+        applyValidation(url, false);
       }
     });
 
-    urlInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') extractBtn.click();
-    });
+    urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') extractBtn.click(); });
 
     copyBtn.addEventListener('click', () => {
       if (!currentHtml) return;

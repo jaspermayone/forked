@@ -10,7 +10,7 @@ import { claudeVisionFallback } from "./fallback";
 import { renderHtml } from "./render";
 import { PipelineResult, Recipe } from "./types";
 
-const CAPTION_CONFIDENCE_THRESHOLD = 0.6;
+const CAPTION_CONFIDENCE_THRESHOLD = 0.45;
 
 export type ProgressCallback = (msg: string) => void;
 
@@ -56,11 +56,19 @@ export async function runPipeline(
       const framesDir = join(tmpDir, "frames");
       const allFrames = extractFrames(videoPath, framesDir);
 
-      onProgress(`Deduplicating ${allFrames.length} frames…`);
-      framePaths = await dedupFrames(allFrames);
-      onProgress(`${framePaths.length} unique frames after dedup.`);
+      if (allFrames.length > 0) {
+        onProgress(`Deduplicating ${allFrames.length} frames…`);
+        framePaths = await dedupFrames(allFrames);
+        onProgress(`${framePaths.length} unique frames after dedup.`);
+      } else {
+        // ffmpeg got 0 frames — CDN URL was likely a redirect/error body; fall through
+        onProgress("ffmpeg got 0 frames from CDN URL — falling back to screenshot sampling…");
+        const screenshotsDir = join(tmpDir, "screenshots");
+        framePaths = await acquireFramesViaScreenshots(url, screenshotsDir);
+        onProgress(`Captured ${framePaths.length} screenshots.`);
+      }
     } else {
-      onProgress("No video URL found — falling back to screenshot sampling…");
+      onProgress("No usable video URL — falling back to screenshot sampling…");
       const screenshotsDir = join(tmpDir, "screenshots");
       framePaths = await acquireFramesViaScreenshots(url, screenshotsDir);
       onProgress(`Captured ${framePaths.length} screenshots.`);
